@@ -37,26 +37,42 @@ export const initSliderCards = () => {
         const slides = gsap.utils.toArray('.slide');
         if (slides.length < 3) return;
 
-        // Встановлюємо початкові класи
-        slides[0].classList.add('active');
-        slides[1].classList.add('next');
-        slides[2].classList.add('prev');
-
-        // Встановлюємо початкові стилі
-        gsap.set('.slide.active', { opacity: 1, rotate: 0, y: '0%' });
-        gsap.set('.slide.next', { opacity: 0.6, rotate: 9, y: '20%' });
-        gsap.set('.slide.prev', { opacity: 0.8, rotate: 15, y: '-20%' });
-
         let isAnimating = false;
         let currentIndex = 0;
+        let isSliderActive = false;
+        let isTransitioning = false;
+
+        // Встановлюємо початкові класи та стилі
+        const updateSlideClasses = () => {
+            slides.forEach((slide, index) => {
+                slide.className = 'slide';
+                if (index === currentIndex) {
+                    slide.classList.add('active');
+                    gsap.to(slide, { opacity: 1, rotate: 0, y: '0%', duration: 0.5 });
+                } else if (index === currentIndex + 1) {
+                    slide.classList.add('next');
+                    gsap.to(slide, { opacity: 0.6, rotate: 9, y: '20%', duration: 0.5 });
+                } else if (index === currentIndex - 1) {
+                    slide.classList.add('prev');
+                    gsap.to(slide, { opacity: 0.8, rotate: 15, y: '-20%', duration: 0.5 });
+                } else {
+                    gsap.to(slide, { opacity: 0, duration: 0.5 });
+                }
+            });
+        };
+
+        updateSlideClasses();
 
         const moveSlides = (direction) => {
-            if (isAnimating) return;
+            if (isAnimating || isTransitioning) return;
             
-            // Перевіряємо чи можемо рухатись далі
             if (direction > 0 && currentIndex >= slides.length - 1) {
                 isSliderActive = false;
-                scroll.start();
+                isTransitioning = true;
+                gsap.delayedCall(0.5, () => {
+                    scroll.start();
+                    isTransitioning = false;
+                });
                 return;
             }
             
@@ -65,72 +81,54 @@ export const initSliderCards = () => {
             }
 
             isAnimating = true;
-
-            const current = slides[currentIndex];
-            const next = slides[currentIndex + 1];
-            const prev = slides[currentIndex - 1];
-
-            // Анімація переходу
-            const tl = gsap.timeline({
+            currentIndex += direction;
+            
+            gsap.timeline({
                 onComplete: () => {
                     isAnimating = false;
+                    updateSlideClasses();
                 }
             });
-
-            if (direction > 0 && next) {
-                // Наступний слайд
-                currentIndex++;
-                
-                tl.to([current, next, prev], { opacity: 0, duration: 0.3 })
-                  .set(current, { className: 'slide prev' })
-                  .set(next, { className: 'slide active' })
-                  .set(prev, { className: 'slide' })
-                  .to('.slide.active', { opacity: 1, rotate: 0, y: '0%', duration: 0.5 })
-                  .to('.slide.prev', { opacity: 0.8, rotate: 15, y: '-20%', duration: 0.5 }, '<');
-
-                if (slides[currentIndex + 1]) {
-                    slides[currentIndex + 1].classList.add('next');
-                    tl.to('.slide.next', { opacity: 0.6, rotate: 9, y: '20%', duration: 0.5 }, '<');
-                }
-            } else if (direction < 0 && prev) {
-                // Попередній слайд
-                currentIndex--;
-                
-                tl.to([current, next, prev], { opacity: 0, duration: 0.3 })
-                  .set(current, { className: 'slide next' })
-                  .set(prev, { className: 'slide active' })
-                  .set(next, { className: 'slide' })
-                  .to('.slide.active', { opacity: 1, rotate: 0, y: '0%', duration: 0.5 })
-                  .to('.slide.next', { opacity: 0.6, rotate: 9, y: '20%', duration: 0.5 }, '<');
-
-                if (slides[currentIndex - 1]) {
-                    slides[currentIndex - 1].classList.add('prev');
-                    tl.to('.slide.prev', { opacity: 0.8, rotate: 15, y: '-20%', duration: 0.5 }, '<');
-                }
-            }
         };
 
         // Обробка подій скролу
         const sliderSection = document.querySelector('.slider-section');
-        let isSliderActive = false;
-
+        
         ScrollTrigger.create({
             trigger: sliderSection,
             scroller: '[data-scroll-container]',
             start: 'top center',
             end: 'bottom center',
-            onEnter: () => { isSliderActive = true; scroll.stop(); },
-            onEnterBack: () => { isSliderActive = true; scroll.stop(); },
-            onLeave: () => { isSliderActive = false; scroll.start(); },
-            onLeaveBack: () => { isSliderActive = false; scroll.start(); }
+            onEnter: () => {
+                if (!isTransitioning) {
+                    isSliderActive = true;
+                    scroll.stop();
+                }
+            },
+            onEnterBack: () => {
+                if (!isTransitioning) {
+                    isSliderActive = true;
+                    scroll.stop();
+                    currentIndex = slides.length - 1;
+                    updateSlideClasses();
+                }
+            },
+            onLeave: () => {
+                isSliderActive = false;
+                scroll.start();
+            },
+            onLeaveBack: () => {
+                isSliderActive = false;
+                scroll.start();
+            }
         });
 
         let lastScrollTime = 0;
-        const scrollThreshold = 500; // мс
+        const scrollThreshold = 800; // Збільшено поріг
 
         // Обробка колеса миші
         window.addEventListener('wheel', (e) => {
-            if (!isSliderActive) return;
+            if (!isSliderActive || isTransitioning) return;
             e.preventDefault();
 
             const now = Date.now();
@@ -142,13 +140,17 @@ export const initSliderCards = () => {
 
         // Обробка тач-подій
         let touchStartY = 0;
+        let isTouching = false;
+
         window.addEventListener('touchstart', (e) => {
-            if (!isSliderActive) return;
+            if (!isSliderActive || isTransitioning) return;
             touchStartY = e.touches[0].clientY;
+            isTouching = true;
         });
 
         window.addEventListener('touchmove', (e) => {
-            if (!isSliderActive) return;
+            if (!isSliderActive || !isTouching || isTransitioning) return;
+            
             const now = Date.now();
             if (now - lastScrollTime < scrollThreshold) return;
 
@@ -160,6 +162,10 @@ export const initSliderCards = () => {
                 moveSlides(deltaY > 0 ? 1 : -1);
                 touchStartY = touchEndY;
             }
+        });
+
+        window.addEventListener('touchend', () => {
+            isTouching = false;
         });
     };
 
