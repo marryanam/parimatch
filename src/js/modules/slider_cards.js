@@ -5,7 +5,6 @@ import LocomotiveScroll from 'locomotive-scroll';
 gsap.registerPlugin(ScrollTrigger);
 
 export const initSliderCards = () => {
-    // Ініціалізація Locomotive Scroll
     const scroll = new LocomotiveScroll({
         el: document.querySelector('[data-scroll-container]'),
         smooth: true,
@@ -14,13 +13,12 @@ export const initSliderCards = () => {
         getDirection: true,
         getSpeed: true,
         class: 'is-revealed',
-        reloadOnContextChange: false,
+        reloadOnContextChange: true,
         touchMultiplier: 1.5,
-        smoothMobile: false,
+        smoothMobile: true,
         resetNativeScroll: true
     });
 
-    // Синхронізація ScrollTrigger
     scroll.on('scroll', ScrollTrigger.update);
 
     ScrollTrigger.scrollerProxy('[data-scroll-container]', {
@@ -32,7 +30,25 @@ export const initSliderCards = () => {
         }
     });
 
-    // Ініціалізація слайдера
+    const style = document.createElement('style');
+    style.textContent = `
+        html {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        html::-webkit-scrollbar {
+            display: none;
+        }
+        body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body::-webkit-scrollbar {
+            display: none;
+        }
+    `;
+    document.head.appendChild(style);
+
     const initializeSlider = () => {
         const slides = gsap.utils.toArray('.slide');
         if (slides.length < 3) return;
@@ -42,6 +58,7 @@ export const initSliderCards = () => {
         let isSliderInView = false;
         const sliderSection = document.querySelector('.slider-section');
         let accumulatedDelta = 0;
+        let isScrollBlocked = false;
 
         const updateSlides = (delta) => {
             const direction = delta > 0 ? 1 : -1;
@@ -49,7 +66,6 @@ export const initSliderCards = () => {
 
             slides.forEach((slide, index) => {
                 if (index === currentIndex) {
-                    // Активна картка - значний рух
                     gsap.to(slide, {
                         opacity: 1,
                         rotate: direction * progress * 90,
@@ -60,9 +76,7 @@ export const initSliderCards = () => {
                 } 
                 
                 if (direction > 0) {
-                    // При скролі вниз
                     if (index === currentIndex + 1) {
-                        // Наступна картка - мінімальний рух
                         gsap.to(slide, {
                             opacity: 1,
                             rotate: 15,
@@ -73,7 +87,6 @@ export const initSliderCards = () => {
                             duration: 0.1
                         });
                     } else if (index === currentIndex - 1) {
-                        // Попередня картка - мінімальний рух
                         gsap.to(slide, {
                             opacity: 1,
                             rotate: 25,
@@ -85,9 +98,7 @@ export const initSliderCards = () => {
                         });
                     }
                 } else {
-                    // При скролі вверх
                     if (index === currentIndex - 1) {
-                        // Попередня картка - мінімальний рух
                         gsap.to(slide, {
                             opacity: 1,
                             rotate: 25,
@@ -98,7 +109,6 @@ export const initSliderCards = () => {
                             duration: 0.1
                         });
                     } else if (index === currentIndex + 1) {
-                        // Наступна картка - мінімальний рух
                         gsap.to(slide, {
                             opacity: 1,
                             rotate: 15,
@@ -111,7 +121,6 @@ export const initSliderCards = () => {
                     }
                 }
 
-                // Інші картки
                 if (Math.abs(index - currentIndex) > 1) {
                     gsap.to(slide, {
                         opacity: 1,
@@ -128,12 +137,10 @@ export const initSliderCards = () => {
                     currentIndex = nextIndex;
                     accumulatedDelta = 0;
 
-                    // Спочатку оновлюємо класи
                     slides.forEach((slide, index) => {
                         slide.className = 'slide';
                         if (index === currentIndex) {
                             slide.classList.add('active');
-                            // Повертаємо активний слайд в дефолтну позицію
                             gsap.to(slide, {
                                 opacity: 1,
                                 rotate: 0,
@@ -145,7 +152,6 @@ export const initSliderCards = () => {
                             });
                         } else if (index === currentIndex + 1) {
                             slide.classList.add('next');
-                            // Дефолтна позиція для next слайду
                             gsap.to(slide, {
                                 opacity: 1,
                                 rotate: 15,
@@ -157,7 +163,6 @@ export const initSliderCards = () => {
                             });
                         } else if (index === currentIndex - 1) {
                             slide.classList.add('prev');
-                            // Дефолтна позиція для prev слайду
                             gsap.to(slide, {
                                 opacity: 1,
                                 rotate: 25,
@@ -168,7 +173,6 @@ export const initSliderCards = () => {
                                 duration: 0.3
                             });
                         } else {
-                            // Ховаємо інші слайди
                             gsap.to(slide, {
                                 opacity: 1,
                                 zIndex: 0,
@@ -184,27 +188,54 @@ export const initSliderCards = () => {
             }
         };
 
-        const canScroll = (direction) => {
+        const shouldUnblockScroll = (direction) => {
             return (direction > 0 && currentIndex >= slides.length - 1) || 
                    (direction < 0 && currentIndex === 0);
         };
 
-        // Обробка колеса миші
+        const centerSlider = () => {
+            const sliderRect = sliderSection.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const targetPosition = (viewportHeight - sliderRect.height) / 2;
+            
+            scroll.scrollTo(sliderSection, {
+                offset: -targetPosition,
+                duration: 800,
+                disableLerp: false
+            });
+        };
+
+        const blockScroll = () => {
+            isScrollBlocked = true;
+            centerSlider();
+            setTimeout(() => {
+                scroll.stop();
+            }, 800);
+        };
+
+        const unblockScroll = () => {
+            isScrollBlocked = false;
+            scroll.start();
+        };
+
         window.addEventListener('wheel', (e) => {
             if (!isSliderInView) return;
 
             const direction = e.deltaY > 0 ? 1 : -1;
             
-            if (!canScroll(direction)) {
-                e.preventDefault();
-                accumulatedDelta += e.deltaY * 0.8;
-                updateSlides(e.deltaY);
+            if (shouldUnblockScroll(direction)) {
+                setTimeout(() => {
+                    unblockScroll();
+                }, 1000);
             } else {
-                scroll.start();
+                if (isSliderInView) {
+                    e.preventDefault();
+                    accumulatedDelta += e.deltaY * 0.8;
+                    updateSlides(e.deltaY);
+                }
             }
         }, { passive: false });
 
-        // Обробка тач-подій
         let touchStartY = 0;
         let isTouching = false;
 
@@ -222,14 +253,18 @@ export const initSliderCards = () => {
             const deltaY = touchStartY - touchEndY;
             const direction = deltaY > 0 ? 1 : -1;
 
-            if (!canScroll(direction)) {
-                e.preventDefault();
-                accumulatedDelta += deltaY * 0.8;
-                updateSlides(deltaY);
+            if (shouldUnblockScroll(direction)) {
+                setTimeout(() => {
+                    unblockScroll();
+                }, 1000);
             } else {
-                scroll.start();
+                if (isSliderInView) {
+                    e.preventDefault();
+                    accumulatedDelta += deltaY * 0.8;
+                    updateSlides(deltaY);
+                }
             }
-        });
+        }, { passive: false });
 
         window.addEventListener('touchend', () => {
             if (isTouching && isSliderInView) {
@@ -264,31 +299,33 @@ export const initSliderCards = () => {
             isTouching = false;
         });
 
-        // Створюємо ScrollTrigger для контролю входу в секцію
         ScrollTrigger.create({
             trigger: sliderSection,
             scroller: '[data-scroll-container]',
-            start: 'top center',
-            end: 'bottom center',
+            start: 'top 60%',
+            end: 'bottom 40%',
             onEnter: () => {
                 isSliderInView = true;
-                scroll.stop();
+                blockScroll();
             },
             onEnterBack: () => {
                 isSliderInView = true;
-                scroll.stop();
+                blockScroll();
             },
             onLeave: () => {
                 isSliderInView = false;
-                scroll.start();
+                setTimeout(() => {
+                    unblockScroll();
+                }, 1000);
             },
             onLeaveBack: () => {
                 isSliderInView = false;
-                scroll.start();
+                setTimeout(() => {
+                    unblockScroll();
+                }, 1000);
             }
         });
 
-        // Початкова ініціалізація класів
         slides.forEach((slide, index) => {
             slide.className = 'slide';
             if (index === currentIndex) {
@@ -300,7 +337,6 @@ export const initSliderCards = () => {
             }
         });
 
-        // Встановлюємо початкові стилі для prev слайду
         if (slides[slides.length - 1]) {
             gsap.set(slides[slides.length - 1], {
                 opacity: 1,
@@ -313,11 +349,9 @@ export const initSliderCards = () => {
         }
     };
 
-    // Ініціалізуємо слайдер
     initializeSlider();
     ScrollTrigger.refresh();
 
-    // Оновлення при зміні розміру вікна
     window.addEventListener('resize', () => {
         scroll.update();
         ScrollTrigger.refresh();
