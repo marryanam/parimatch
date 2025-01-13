@@ -1,0 +1,34 @@
+@use 'variables' as v;
+
+// Media queries
+@mixin respond-to($breakpoint) {
+    @if $breakpoint == "sm" {
+        @media (min-width: v.$breakpoint-sm) { @content; }
+    }
+    @else if $breakpoint == "md" {
+        @media (min-width: v.$breakpoint-md) { @content; }
+    }
+    @else if $breakpoint == "lg" {
+        @media (min-width: v.$breakpoint-lg) { @content; }
+    }
+    @else if $breakpoint == "xl" {
+        @media (min-width: v.$breakpoint-xl) { @content; }
+    }
+}
+
+// Flexbox
+@mixin flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+// Container
+@mixin container {
+    width: 100%;
+    padding-right: v.$spacing-unit;
+    padding-left: v.$spacing-unit;
+    margin-right: auto;
+    margin-left: auto;
+    max-width: v.$container-max-width;
+}

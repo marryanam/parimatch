@@ -1,0 +1,85 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Spacing utilities
+.mt {
+    &-1 { margin-top: 0.5rem; }
+    &-2 { margin-top: 1rem; }
+    &-3 { margin-top: 2rem; }
+    &-4 { margin-top: 3rem; }
+    &-5 { margin-top: 4rem; }
+}
+
+.mb {
+    &-1 { margin-bottom: 0.5rem; }
+    &-2 { margin-bottom: 1rem; }
+    &-3 { margin-bottom: 2rem; }
+    &-4 { margin-bottom: 3rem; }
+    &-5 { margin-bottom: 4rem; }
+}
+
+// Typography utilities
+.text {
+    &-center { text-align: center; }
+    &-left { text-align: left; }
+    &-right { text-align: right; }
+    
+    &-small { font-size: 0.875rem; }
+    &-large { font-size: 1.25rem; }
+    
+    &-light { opacity: 0.5; }
+    &-bold { font-weight: 600; }
+}
+
+// Layout utilities
+.container {
+    @include container;
+}
+
+.flex {
+    display: flex;
+    
+    &-center {
+        @include flex-center;
+    }
+    
+    &-between {
+        justify-content: space-between;
+    }
+    
+    &-column {
+        flex-direction: column;
+    }
+    
+    &-wrap {
+        flex-wrap: wrap;
+    }
+    
+    &-gap {
+        &-1 { gap: 0.5rem; }
+        &-2 { gap: 1rem; }
+        &-3 { gap: 2rem; }
+        &-4 { gap: 3rem; }
+    }
+}
+
+// Responsive utilities
+.hide {
+    &-mobile {
+        @include mobile {
+            display: none;
+        }
+    }
+    
+    &-tablet {
+        @include tablet {
+            display: none;
+        }
+    }
+    
+    &-desktop {
+        @include desktop {
+            display: none;
+        }
+    }
+}

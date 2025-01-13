@@ -1,0 +1,9 @@
+// Base styles
+@use 'partials/variables';
+@use 'partials/base';
+@use 'partials/header';
+@use 'partials/footer';
+
+// Components
+@use 'partials/components/buttons';
+@use 'partials/components/forms';
