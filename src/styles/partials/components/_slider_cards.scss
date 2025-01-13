@@ -6,11 +6,6 @@
     &-section {
         background: $color-black;
         overflow: hidden;
-        
-        &.sticky {
-            position: sticky;
-            top: 0;
-        }
     }
 
     &-wrapper {
