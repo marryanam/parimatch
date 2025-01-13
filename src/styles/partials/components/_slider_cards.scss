@@ -1,0 +1,234 @@
+@use '../../partials/variables' as *;
+@use '../../partials/mixins' as *;
+@use 'sass:map';
+
+.slider {
+    &-section {
+        background: $color-black;
+        overflow: hidden;
+        
+        &.sticky {
+            position: sticky;
+            top: 0;
+        }
+    }
+
+    &-wrapper {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        perspective: 1500px;
+
+        @include respond-to('lg') {
+            perspective: 1200px;
+        }
+
+        @include respond-to('md') {
+            perspective: 1000px;
+        }
+
+        @include respond-to('sm') {
+            perspective: 800px;
+        }
+    }
+
+    &-container {
+        width: 100%;
+        max-width: 1000px;
+        height: 600px;
+        position: relative;
+        transform-style: preserve-3d;
+
+        @include respond-to('xl') {
+            max-width: 900px;
+            height: 540px;
+        }
+
+        @include respond-to('lg') {
+            max-width: 800px;
+            height: 480px;
+        }
+
+        @include respond-to('md') {
+            max-width: 600px;
+            height: 360px;
+        }
+
+        @include respond-to('sm') {
+            max-width: 100%;
+            height: 300px;
+            margin: 0 $spacing-md;
+        }
+    }
+}
+
+.slide {
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    left: 15%;
+    top: 15%;
+    transform-style: preserve-3d;
+    transform-origin: center center;
+    transition: all 0.7s cubic-bezier(0.645, 0.045, 0.355, 1);
+    will-change: transform, opacity;
+
+    @include respond-to('md') {
+        width: 80%;
+        height: 80%;
+        left: 10%;
+        top: 10%;
+    }
+
+    @include respond-to('sm') {
+        width: 90%;
+        height: 90%;
+        left: 5%;
+        top: 5%;
+    }
+
+    &-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: map.get($color-black-overlay, dark);
+        border: 2px solid map.get($color-yellow-glow, soft);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transform-style: preserve-3d;
+        box-shadow: 0 0 20px map.get($color-yellow-glow, faint);
+        overflow: hidden;
+        font-size: clamp(2rem, 5vw, 4rem);
+        font-weight: 900;
+        color: $color-yellow;
+        text-transform: uppercase;
+        text-shadow: 0 0 10px map.get($color-yellow-glow, light),
+                     0 0 20px map.get($color-yellow-glow, medium),
+                     0 0 30px map.get($color-yellow-glow, soft);
+        animation: glow 2s ease-in-out infinite alternate;
+        transform: translateZ(50px);
+        padding: $spacing-md;
+        text-align: center;
+
+        @include respond-to('lg') {
+            transform: translateZ(40px);
+            font-size: clamp(1.8rem, 4vw, 3.5rem);
+        }
+
+        @include respond-to('md') {
+            transform: translateZ(30px);
+            font-size: clamp(1.5rem, 3.5vw, 3rem);
+            padding: $spacing-sm;
+        }
+
+        @include respond-to('sm') {
+            transform: translateZ(20px);
+            font-size: clamp(1.2rem, 3vw, 2.5rem);
+            padding: $spacing-xs;
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: map.get($color-black-overlay, medium);
+            z-index: -1;
+            transform: translateZ(-20px);
+            border: 2px solid map.get($color-yellow-glow, trace);
+
+            @include respond-to('md') {
+                transform: translateZ(-15px);
+            }
+
+            @include respond-to('sm') {
+                transform: translateZ(-10px);
+            }
+        }
+    }
+
+    &.active {
+        transform: translateZ(0) rotateX(0) translateY(0);
+        z-index: 3;
+        opacity: 1;
+    }
+
+    &.prev {
+        transform: rotate(15deg) translateY(-20%);
+        opacity: 0.8;
+        z-index: 1;
+        top: 17%;
+        left: 10%;
+
+        @include respond-to('md') {
+            transform: rotate(12deg) translateY(-15%);
+            top: 15%;
+            left: 8%;
+        }
+
+        @include respond-to('sm') {
+            transform: rotate(10deg) translateY(-10%);
+            top: 12%;
+            left: 5%;
+        }
+    }
+
+    &.next {
+        transform: rotate(9deg) translateY(20%);
+        opacity: 0.6;
+        z-index: 2;
+        top: -3%;
+        left: 13%;
+
+        @include respond-to('md') {
+            transform: rotate(7deg) translateY(15%);
+            top: -2%;
+            left: 10%;
+        }
+
+        @include respond-to('sm') {
+            transform: rotate(5deg) translateY(10%);
+            top: -1%;
+            left: 8%;
+        }
+    }
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px map.get($color-yellow-glow, light),
+                     0 0 20px map.get($color-yellow-glow, medium),
+                     0 0 30px map.get($color-yellow-glow, soft);
+    }
+    to {
+        text-shadow: 0 0 20px map.get($color-yellow-glow, light),
+                     0 0 30px map.get($color-yellow-glow, medium),
+                     0 0 40px map.get($color-yellow-glow, soft),
+                     0 0 50px map.get($color-yellow-glow, trace);
+    }
+}
+
+// Touch device optimizations
+@media (hover: none) and (pointer: coarse) {
+    .slider {
+        &-wrapper {
+            perspective: 800px;
+        }
+
+        &-container {
+            touch-action: pan-y pinch-zoom;
+        }
+    }
+
+    .slide {
+        &-inner {
+            transform: translateZ(20px);
+            
+            &::before {
+                transform: translateZ(-10px);
+            }
+        }
+    }
+} 

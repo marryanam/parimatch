@@ -1,2 +1,37 @@
 @use '../variables' as *;
 @use '../mixins' as *;
+
+.cursor {
+    pointer-events: none;
+    mix-blend-mode: difference;
+    position: fixed;
+    z-index: 1000;
+
+    &__dot {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 8px;
+        height: 8px;
+        background-color: $color-white;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        will-change: transform, width, height;
+    }
+
+    &__circle {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 40px;
+        height: 40px;
+        border: 1px solid rgba($color-white, 0.5);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        will-change: transform, width, height;
+    }
+
+    @include respond-to(sm) {
+        display: none;
+    }
+}

@@ -1,41 +1,98 @@
+import gsap from 'gsap';
+
 export const initCursor = () => {
-    const cursor = document.querySelector('.cursor__ball');
-    const cursorPos = { x: 0, y: 0 };
-    const currentPos = { x: 0, y: 0 };
-    
-    // Smooth cursor movement
-    gsap.ticker.add(() => {
-        const speed = 0.35;
-        
-        currentPos.x += (cursorPos.x - currentPos.x) * speed;
-        currentPos.y += (cursorPos.y - currentPos.y) * speed;
-        
-        gsap.set(cursor, {
-            x: currentPos.x,
-            y: currentPos.y
-        });
-    });
+    const cursor = {
+        dot: document.querySelector('.cursor__dot'),
+        circle: document.querySelector('.cursor__circle')
+    };
 
+    if (!cursor.dot || !cursor.circle) return;
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let circleX = 0;
+    let circleY = 0;
+
+    // Налаштування плавності руху
+    const dotSmooth = 1; // Миттєве слідування
+    const circleSmooth = 0.15; // Плавне слідування
+
+    // Анімація курсора
+    const animate = () => {
+        // Оновлення позиції точки (миттєве слідування)
+        currentX = mouseX;
+        currentY = mouseY;
+        
+        // Оновлення позиції кола (плавне слідування)
+        const deltaX = mouseX - circleX;
+        const deltaY = mouseY - circleY;
+        
+        circleX += deltaX * circleSmooth;
+        circleY += deltaY * circleSmooth;
+
+        // Застосування трансформацій
+        gsap.set(cursor.dot, {
+            x: currentX,
+            y: currentY
+        });
+
+        gsap.set(cursor.circle, {
+            x: circleX,
+            y: circleY
+        });
+
+        requestAnimationFrame(animate);
+    };
+
+    // Запуск анімації
+    animate();
+
+    // Оновлення позиції миші
     document.addEventListener('mousemove', (e) => {
-        cursorPos.x = e.clientX;
-        cursorPos.y = e.clientY;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
     });
 
-    // Scale cursor on interactive elements
-    const interactiveElements = document.querySelectorAll('a, button, .project');
-    interactiveElements.forEach(el => {
-        el.addEventListener('mouseenter', () => {
-            gsap.to(cursor, {
-                scale: 1.5,
-                duration: 0.3
-            });
+    // Анімації при наведенні
+    const handleMouseEnter = () => {
+        gsap.to(cursor.circle, {
+            width: 80,
+            height: 80,
+            duration: 0.4,
+            ease: "power2.out"
         });
+    };
 
-        el.addEventListener('mouseleave', () => {
-            gsap.to(cursor, {
-                scale: 1,
-                duration: 0.3
-            });
+    const handleMouseLeave = () => {
+        gsap.to(cursor.circle, {
+            width: 40,
+            height: 40,
+            duration: 0.4,
+            ease: "power2.out"
+        });
+    };
+
+    // Додаємо обробники подій для інтерактивних елементів
+    const interactiveElements = document.querySelectorAll('a, button, .slide');
+    interactiveElements.forEach(element => {
+        element.addEventListener('mouseenter', handleMouseEnter);
+        element.addEventListener('mouseleave', handleMouseLeave);
+    });
+
+    // Приховуємо курсор при виході за межі вікна
+    document.addEventListener('mouseleave', () => {
+        gsap.to([cursor.dot, cursor.circle], {
+            opacity: 0,
+            duration: 0.3
+        });
+    });
+
+    document.addEventListener('mouseenter', () => {
+        gsap.to([cursor.dot, cursor.circle], {
+            opacity: 1,
+            duration: 0.3
         });
     });
 };

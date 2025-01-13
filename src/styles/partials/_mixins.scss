@@ -1,34 +1,63 @@
-@use 'variables' as v;
+@use 'variables' as *;
 
-// Media queries
+// Медіа-запити
 @mixin respond-to($breakpoint) {
-    @if $breakpoint == "sm" {
-        @media (min-width: v.$breakpoint-sm) { @content; }
-    }
-    @else if $breakpoint == "md" {
-        @media (min-width: v.$breakpoint-md) { @content; }
-    }
-    @else if $breakpoint == "lg" {
-        @media (min-width: v.$breakpoint-lg) { @content; }
-    }
-    @else if $breakpoint == "xl" {
-        @media (min-width: v.$breakpoint-xl) { @content; }
+    @if map-has-key($breakpoints, $breakpoint) {
+        @media (max-width: map-get($breakpoints, $breakpoint)) {
+            @content;
+        }
+    } @else {
+        @warn "Невідомий брейкпоінт: #{$breakpoint}";
     }
 }
 
-// Flexbox
+// Контейнер
+@mixin container {
+    width: 100%;
+    max-width: map-get($container, 'xl');
+    margin: 0 auto;
+    padding: 0 $spacing-md;
+
+    @include respond-to('xl') {
+        max-width: map-get($container, 'lg');
+    }
+
+    @include respond-to('lg') {
+        max-width: map-get($container, 'md');
+        padding: 0 $spacing-sm;
+    }
+
+    @include respond-to('md') {
+        max-width: map-get($container, 'sm');
+    }
+
+    @include respond-to('sm') {
+        max-width: 100%;
+        padding: 0 $spacing-xs;
+    }
+}
+
+// Центрування flex
 @mixin flex-center {
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-// Container
-@mixin container {
-    width: 100%;
-    padding-right: v.$spacing-unit;
-    padding-left: v.$spacing-unit;
-    margin-right: auto;
-    margin-left: auto;
-    max-width: v.$container-max-width;
+// Абсолютне центрування
+@mixin absolute-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+// Приховування скролбару
+@mixin hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }

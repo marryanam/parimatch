@@ -1,17 +1,16 @@
+import gsap from 'gsap';
+
 export const initLoader = () => {
     const loader = document.querySelector('.loader');
-    const progress = document.querySelector('.loader__progress');
+    
+    if (!loader) return;
 
-    // Initial loading animation
-    const tl = gsap.timeline();
-
-    tl.to(progress, {
-        scaleX: 1,
-        duration: 1.5,
-        ease: 'power3.inOut'
-    }).to(loader, {
-        yPercent: -100,
+    gsap.to(loader, {
+        opacity: 0,
         duration: 1,
-        ease: 'power3.inOut'
+        ease: 'power2.inOut',
+        onComplete: () => {
+            loader.style.display = 'none';
+        }
     });
 };

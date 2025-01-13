@@ -1,76 +1,65 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const sass = require('sass');
-
-const isDevelopment = process.env.NODE_ENV !== 'production';
+const PostHtmlInclude = require('posthtml-include');
 
 module.exports = {
-    mode: 'development',
     entry: './src/js/index.js',
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'js/[name].[contenthash].js',
+        filename: '[name].[contenthash].js',
         clean: true
+    },
+    resolve: {
+        extensions: ['.js', '.mjs', '.json'],
+        alias: {
+            '@': path.resolve(__dirname, 'src')
+        }
     },
     module: {
         rules: [
-            {
-                test: /\.html$/,
-                use: [
-                    {
-                        loader: 'html-loader',
-                        options: {
-                            minimize: false,
-                            sources: true,
-                            preprocessor: (content, loaderContext) => {
-                                let result = content;
-                                
-                                // Process includes
-                                const includeRegex = /<include src="([^"]+)"><\/include>/g;
-                                const includes = content.matchAll(includeRegex);
-                                
-                                for (const match of includes) {
-                                    const includePath = path.resolve(path.dirname(loaderContext.resourcePath), match[1]);
-                                    try {
-                                        const includeContent = require('fs').readFileSync(includePath, 'utf8');
-                                        result = result.replace(match[0], includeContent);
-                                        loaderContext.addDependency(includePath);
-                                    } catch (error) {
-                                        console.error(`Error processing include: ${includePath}`, error);
-                                    }
-                                }
-                                
-                                return result;
-                            }
-                        }
-                    }
-                ]
-            },
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['@babel/preset-env']
+                        presets: ['@babel/preset-env'],
+                        plugins: ['@babel/plugin-transform-runtime']
                     }
                 }
             },
             {
                 test: /\.scss$/,
                 use: [
-                    isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
-                    'css-loader',
+                    MiniCssExtractPlugin.loader,
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            sourceMap: true
+                        }
+                    },
                     {
                         loader: 'sass-loader',
                         options: {
-                            api: 'modern',
-                            implementation: sass,
-                            sourceMap: isDevelopment,
+                            sourceMap: true,
                             sassOptions: {
-                                outputStyle: isDevelopment ? 'expanded' : 'compressed'
+                                outputStyle: 'compressed'
                             }
+                        }
+                    }
+                ]
+            },
+            {
+                test: /\.html$/,
+                use: [
+                    'html-loader',
+                    {
+                        loader: 'posthtml-loader',
+                        options: {
+                            plugins: [
+                                PostHtmlInclude({ root: './src/templates' })
+                            ]
                         }
                     }
                 ]
@@ -81,24 +70,31 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: './src/templates/index.html',
             filename: 'index.html',
-            inject: true
+            inject: 'body'
         }),
-        ...(isDevelopment ? [] : [
-            new MiniCssExtractPlugin({
-                filename: 'css/[name].[contenthash].css'
-            })
-        ])
+        new MiniCssExtractPlugin({
+            filename: '[name].[contenthash].css'
+        })
     ],
     devServer: {
         static: {
-            directory: path.join(__dirname, 'dist'),
-            watch: true
+            directory: path.join(__dirname, 'dist')
         },
-        watchFiles: ['src/**/*.html', 'src/**/*.js', 'src/**/*.scss'],
         hot: true,
-        liveReload: true,
-        port: 8082,
-        open: true
+        open: true,
+        historyApiFallback: true
     },
-    devtool: isDevelopment ? 'eval-source-map' : 'source-map'
-}
+    optimization: {
+        moduleIds: 'deterministic',
+        runtimeChunk: 'single',
+        splitChunks: {
+            cacheGroups: {
+                vendor: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: 'vendors',
+                    chunks: 'all'
+                }
+            }
+        }
+    }
+};

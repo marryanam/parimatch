@@ -1,21 +1,23 @@
 // Import styles
 import '../styles/main.scss';
-import { initSmoothScroll } from './modules/smoothScroll';
-import { initSections } from './modules/sections';
-import { initSplitText } from './modules/splitText';
-import { initCursor } from './modules/cursor';
-import { initLoader } from './modules/loader';
+
+// Import GSAP
+import gsap from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger.js';
+
+// Import modules
+import { initSplitText } from './modules/splitText.js';
+import { initCursor } from './modules/cursor.js';
+import { initLoader } from './modules/loader.js';
+import { initSliderCards } from './modules/slider_cards.js';
+
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger);
 
 // Initialize modules
 document.addEventListener('DOMContentLoaded', () => {
     // Ініціалізація завантажувача
     initLoader();
-
-    // Ініціалізація плавного скролу
-    const scroller = initSmoothScroll();
-
-    // Ініціалізація анімацій секцій
-    initSections();
 
     // Ініціалізація анімацій тексту
     initSplitText();
@@ -23,8 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ініціалізація кастомного курсора
     initCursor();
 
+    // Ініціалізація слайдера
+    const scroll = initSliderCards();
+
     // Оновлення ScrollTrigger при зміні розміру вікна
     window.addEventListener('resize', () => {
-        scroller.update();
+        ScrollTrigger.refresh();
     });
 });

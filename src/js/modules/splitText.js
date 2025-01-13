@@ -1,3 +1,9 @@
+import gsap from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger.js';
+import SplitType from 'split-type';
+
+gsap.registerPlugin(ScrollTrigger);
+
 export const initSplitText = () => {
     // Split text into spans
     const splitText = (element) => {
