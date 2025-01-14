@@ -1,0 +1,20 @@
+@keyframes logoGlow {
+    0% {
+        text-shadow: 0 0 20px rgba(204, 255, 0, 0.5);
+    }
+    100% {
+        text-shadow: 0 0 40px rgba(204, 255, 0, 0.8);
+    }
+}
+
+@keyframes cornerPulse {
+    0% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.4;
+    }
+} 

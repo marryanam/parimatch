@@ -10,6 +10,7 @@ import { initSplitText } from './modules/splitText.js';
 import { initCursor } from './modules/cursor.js';
 import { initLoader } from './modules/loader.js';
 import { initSliderCards } from './modules/slider_cards.js';
+import Preloader from './modules/preloader';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -27,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ініціалізація слайдера
     const scroll = initSliderCards();
+
+    new Preloader();
 
     // Оновлення ScrollTrigger при зміні розміру вікна
     window.addEventListener('resize', () => {

@@ -2,3 +2,7 @@
 @use 'partials/components/slider_cards';
 @use 'partials/components/cursor';
 @import 'locomotive-scroll/dist/locomotive-scroll.css';
+@import "partials/animations";
+@import "partials/components/preloader";
+@import "partials/components/header";
+@import "partials/sections/section1";
