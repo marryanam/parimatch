@@ -9,7 +9,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.8s ease-out;
+    transition: opacity 0.5s ease;
 
     &.loaded {
         opacity: 0;
@@ -30,12 +30,14 @@
     }
 
     &__logo {
-        font-size: 48px;
+        font-size: clamp(32px, 5vw, 48px);
         font-weight: 700;
         color: #CCFF00;
         text-shadow: 0 0 20px rgba(204, 255, 0, 0.5);
         letter-spacing: 2px;
         animation: logoGlow 2s infinite alternate;
+        white-space: nowrap;
+        pointer-events: none;
     }
 }
 
@@ -77,11 +79,11 @@
 }
 
 @keyframes logoGlow {
-    0% {
+    from {
         text-shadow: 0 0 20px rgba(204, 255, 0, 0.5);
     }
-    100% {
-        text-shadow: 0 0 40px rgba(204, 255, 0, 0.8);
+    to {
+        text-shadow: 0 0 30px rgba(204, 255, 0, 0.8);
     }
 }
 

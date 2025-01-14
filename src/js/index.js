@@ -11,6 +11,7 @@ import { initCursor } from './modules/cursor.js';
 import { initLoader } from './modules/loader.js';
 import { initSliderCards } from './modules/slider_cards.js';
 import Preloader from './modules/preloader';
+import { initLogoAnimation } from './modules/logo-animation';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -28,6 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ініціалізація слайдера
     const scroll = initSliderCards();
+
+    // Ініціалізація анімації логотипу
+    initLogoAnimation();
 
     new Preloader();
 

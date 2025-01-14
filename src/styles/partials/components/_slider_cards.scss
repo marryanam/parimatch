@@ -32,97 +32,96 @@
 
     &-container {
         width: 100%;
-        max-width: 1000px;
-        height: 600px;
+        max-width: 800px;
+        height: 400px;
         position: relative;
         transform-style: preserve-3d;
 
         @include respond-to('xl') {
-            max-width: 900px;
-            height: 540px;
+            max-width: 700px;
+            height: 440px;
         }
 
         @include respond-to('lg') {
-            max-width: 800px;
-            height: 480px;
+            max-width: 600px;
+            height: 380px;
         }
 
         @include respond-to('md') {
-            max-width: 600px;
-            height: 360px;
+            max-width: 500px;
+            height: 320px;
         }
 
         @include respond-to('sm') {
             max-width: 100%;
             height: 300px;
-            margin: 0 $spacing-md;
+            margin: 0;
         }
     }
 }
 
 .slide {
     position: absolute;
-    width: 70%;
-    height: 70%;
-    left: 15%;
-    top: 15%;
-    transform-style: preserve-3d;
+    width: 100%;
+    height: 100%;
     transform-origin: center center;
     transition: all 0.7s cubic-bezier(0.645, 0.045, 0.355, 1);
     will-change: transform, opacity;
+    transform: rotate(-5deg);
+    z-index: 1;
+    opacity: 0.8;
+    left: 9%;
+    top: 25%;
 
     @include respond-to('md') {
         width: 80%;
         height: 80%;
-        left: 10%;
-        top: 10%;
     }
 
     @include respond-to('sm') {
         width: 90%;
         height: 90%;
-        left: 5%;
-        top: 5%;
     }
 
     &-inner {
         position: relative;
         width: 100%;
         height: 100%;
-        background: map.get($color-black-overlay, dark);
-        border: 2px solid map.get($color-yellow-glow, soft);
-        display: grid;
+        background: rgba(0, 0, 0, 0.9);
+        border: 1px solid rgba(248, 255, 19, 0.1);
+        display: flex;
         justify-content: center;
         align-items: center;
-        transform-style: preserve-3d;
-        box-shadow: 0 0 20px map.get($color-yellow-glow, faint);
-        overflow: hidden;
-        font-size: clamp(2rem, 5vw, 4rem);
-        font-weight: 900;
-        color: $color-yellow;
-        text-transform: uppercase;
-        text-shadow: 0 0 10px map.get($color-yellow-glow, light),
-                     0 0 20px map.get($color-yellow-glow, medium),
-                     0 0 30px map.get($color-yellow-glow, soft);
-        animation: glow 2s ease-in-out infinite alternate;
-        transform: translateZ(50px);
         padding: $spacing-md;
-        text-align: center;
+
+        svg {
+            width: auto;
+            height: auto;
+            max-width: 90%;
+            max-height: 90%;
+            path {
+                opacity: 0;
+                transform: translateY(30px);
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+        }
+        &.large{
+            svg {
+                width: 350px;
+            }
+        }
 
         @include respond-to('lg') {
             transform: translateZ(40px);
-            font-size: clamp(1.8rem, 4vw, 3.5rem);
         }
 
         @include respond-to('md') {
             transform: translateZ(30px);
-            font-size: clamp(1.5rem, 3.5vw, 3rem);
             padding: $spacing-sm;
         }
 
         @include respond-to('sm') {
             transform: translateZ(20px);
-            font-size: clamp(1.2rem, 3vw, 2.5rem);
             padding: $spacing-xs;
         }
 
@@ -133,125 +132,47 @@
             border: 2px solid transparent;
             transition: border-color 0.3s;
             pointer-events: none;
-            box-shadow: 0 0 20px rgba(map.get($color-yellow-glow, light), 0.3);
+            box-shadow: none;
         }
 
         &::after {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(
-                circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
-                rgba(map.get($color-yellow-glow, light), 0.4) 0%,
-                rgba(map.get($color-yellow-glow, medium), 0.3) 20%,
-                rgba(map.get($color-yellow-glow, soft), 0.2) 35%,
-                transparent 60%
-            );
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-            left: var(--mouse-x, 50%);
-            top: var(--mouse-y, 50%);
-            mix-blend-mode: screen;
-            filter: blur(5px);
-        }
-
-        .line {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .word {
-            display: flex;
-            margin-right: 0.1em;
-        }
-
-        .space {
-            display: inline-block;
-            opacity: 1;
-            width: 0.5em;
-        }
-
-        span:not(.word):not(.space) {
-            display: inline-block;
-            opacity: 0;
-            transform: translateY(30px);
-            
-            &.animate {
-                animation: textWave 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            }
-
-            @for $i from 0 through 30 {
-                &[style*="--char-index: #{$i}"] {
-                    animation-delay: #{$i * 0.05}s;
-                }
-            }
+            display: none;
         }
     }
 
+    // Активний слайд
     &.active {
-        transform: translateZ(0) rotateX(0) translateY(0);
+        transform: rotate(-15deg);
         z-index: 3;
         opacity: 1;
+        left: 0;
+        top: 15%;
     }
 
-    &.prev {
-        transform: rotate(15deg) translateY(-20%);
-        opacity: 0.8;
-        z-index: 1;
-        top: 17%;
-        left: 10%;
-
-        @include respond-to('md') {
-            transform: rotate(12deg) translateY(-15%);
-            top: 15%;
-            left: 8%;
-        }
-
-        @include respond-to('sm') {
-            transform: rotate(10deg) translateY(-10%);
-            top: 12%;
-            left: 5%;
-        }
-    }
-
+    // Наступний слайд
     &.next {
-        transform: rotate(9deg) translateY(20%);
-        opacity: 0.6;
+        transform: rotate(-10deg);
         z-index: 2;
-        top: -3%;
-        left: 13%;
-
-        @include respond-to('md') {
-            transform: rotate(7deg) translateY(15%);
-            top: -2%;
-            left: 10%;
-        }
-
-        @include respond-to('sm') {
-            transform: rotate(5deg) translateY(10%);
-            top: -1%;
-            left: 8%;
-        }
+        opacity: 0.9;
+        left: 0;
+        top: 20%;
     }
 
-    &.active .slide-inner {
-        &::before {
-            animation: borderDraw 0.8s linear forwards;
-        }
+    // Попередній слайд
+    &.prev {
+        transform: rotate(-5deg);
+        z-index: 1;
+        opacity: 0.8;
+        left: 0;
+        top: 25%;
     }
 
-    &:hover .slide-inner {
-        &::after {
-            opacity: 1;
-        }
-        &::before {
-            box-shadow: 0 0 30px rgba(map.get($color-yellow-glow, light), 0.5);
-        }
-
+    &:not(.active):not(.next):not(.prev) {
+        transform: rotate(0deg);
+        z-index: 0;
+        opacity: 0.7;
+        left: 6%;
+        top: 30%;
     }
 }
 
@@ -378,3 +299,9 @@
         }
     }
 } 
+
+@keyframes rotate {
+	100% {
+		transform: translate(-50%, -50%) rotate(1turn);
+	}
+}
