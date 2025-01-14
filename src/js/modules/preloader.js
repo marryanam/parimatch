@@ -7,7 +7,6 @@ export default class Preloader {
         this.burgerMenu = document.querySelector('.burger-menu');
         this.isLoaded = false;
         this.init();
-        this.disableScroll();
     }
 
     init() {
@@ -34,23 +33,6 @@ export default class Preloader {
         });
     }
 
-    disableScroll() {
-        // Зберігаємо поточну позицію скролу
-        this.scrollPosition = window.pageYOffset;
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${this.scrollPosition}px`;
-        document.body.style.width = '100%';
-    }
-
-    enableScroll() {
-        document.body.style.removeProperty('overflow');
-        document.body.style.removeProperty('position');
-        document.body.style.removeProperty('top');
-        document.body.style.removeProperty('width');
-        window.scrollTo(0, this.scrollPosition);
-    }
-
     hidePreloader() {
         this.preloader.classList.add('loaded');
         
@@ -64,7 +46,6 @@ export default class Preloader {
         
         setTimeout(() => {
             this.isLoaded = true;
-            this.enableScroll();
         }, 800);
     }
 
