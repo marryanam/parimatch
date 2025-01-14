@@ -1,7 +1,133 @@
 .section-3 {
     height: 100vh;
-    background: linear-gradient(145deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.8) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-color: #000000;
+    position: relative;
+    overflow: hidden;
+
+    &__content {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        position: relative;
+    }
+
+    &__info {
+        position: relative;
+        transform: translateY(50px);
+        opacity: 0;
+        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+        z-index: 2;
+
+        &.is-inview {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    &__stats {
+        display: flex;
+        justify-content: center;
+        gap: 4rem;
+        margin-bottom: 2rem;
+    }
+
+    &__stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    &__stat-number {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 700;
+        color: #FFE600;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    &__stat-text {
+        font-size: clamp(1rem, 1.2vw, 1.2rem);
+        color: #ffffff;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    &__title {
+        font-size: clamp(3rem, 8vw, 8rem);
+        font-weight: 800;
+        color: #FFE600;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        margin-bottom: 1.5rem;
+        line-height: 1;
+        text-shadow: 0 0 20px rgba(255, 230, 0, 0.3);
+    }
+
+    &__text {
+        font-size: clamp(1rem, 1.5vw, 1.4rem);
+        color: #ffffff;
+        line-height: 1.6;
+        font-weight: 300;
+        opacity: 0.8;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    &__map {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 70%;
+        opacity: 0.15;
+        pointer-events: none;
+        
+        svg {
+            width: 100%;
+            height: 100%;
+            path {
+                stroke: #FFE600;
+                stroke-width: 1;
+                fill: none;
+            }
+        }
+    }
+
+    @media (max-width: 768px) {
+        &__content {
+            padding: 1.5rem;
+        }
+
+        &__stats {
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        &__stat-number {
+            font-size: 2.5rem;
+        }
+
+        &__stat-text {
+            font-size: 0.9rem;
+        }
+
+        &__title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            margin-bottom: 1rem;
+        }
+
+        &__text {
+            font-size: 1rem;
+        }
+
+        &__map {
+            height: 50%;
+        }
+    }
 }

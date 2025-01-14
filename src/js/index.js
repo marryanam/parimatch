@@ -11,6 +11,7 @@ import { initCursor } from './modules/cursor.js';
 import { initLoader } from './modules/loader.js';
 import { initSliderCards } from './modules/slider_cards.js';
 import Preloader from './modules/preloader';
+import ScrollAnimations from './modules/scroll-animations';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -30,6 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const scroll = initSliderCards();
 
     new Preloader();
+    
+    // Ініціалізація анімацій скролу
+    new ScrollAnimations();
 
     // Оновлення ScrollTrigger при зміні розміру вікна
     window.addEventListener('resize', () => {
