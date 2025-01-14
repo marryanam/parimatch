@@ -61,8 +61,41 @@ export const initSliderCards = () => {
         let isScrollBlocked = false;
 
         const updateSlides = (delta) => {
+            if (isAnimating) return;
+            
             const direction = delta > 0 ? 1 : -1;
             const progress = Math.min(Math.abs(accumulatedDelta) / 1000, 1);
+
+            slides.forEach((slide, index) => {
+                if (index === currentIndex) {
+                    gsap.set(slide, {
+                        opacity: 1,
+                        rotate: 0,
+                        y: '0%',
+                        left: '15%',
+                        top: '15%',
+                        zIndex: 3
+                    });
+                } else if (index === currentIndex + 1) {
+                    gsap.set(slide, {
+                        opacity: 1,
+                        rotate: 15,
+                        y: '20%',
+                        left: '13%',
+                        top: '-3%',
+                        zIndex: 2
+                    });
+                } else if (index === currentIndex - 1) {
+                    gsap.set(slide, {
+                        opacity: 1,
+                        rotate: 25,
+                        y: '-20%',
+                        left: '10%',
+                        top: '17%',
+                        zIndex: 1
+                    });
+                }
+            });
 
             slides.forEach((slide, index) => {
                 if (index === currentIndex) {
@@ -70,7 +103,7 @@ export const initSliderCards = () => {
                         opacity: 1,
                         rotate: direction * progress * 90,
                         y: direction * progress * -100 + '%',
-                        duration: 0.1,
+                        duration: 0.5,
                         zIndex: 3
                     });
                 } 
@@ -84,7 +117,7 @@ export const initSliderCards = () => {
                             left: '13%',
                             top: '-3%',
                             zIndex: 2,
-                            duration: 0.1
+                            duration: 0.5
                         });
                     } else if (index === currentIndex - 1) {
                         gsap.to(slide, {
@@ -94,7 +127,7 @@ export const initSliderCards = () => {
                             left: '10%',
                             top: '17%',
                             zIndex: 1,
-                            duration: 0.1
+                            duration: 0.5
                         });
                     }
                 } else {
@@ -106,7 +139,7 @@ export const initSliderCards = () => {
                             left: '10%',
                             top: '17%',
                             zIndex: 2,
-                            duration: 0.1
+                            duration: 0.5
                         });
                     } else if (index === currentIndex + 1) {
                         gsap.to(slide, {
@@ -116,17 +149,9 @@ export const initSliderCards = () => {
                             left: '13%',
                             top: '-3%',
                             zIndex: 1,
-                            duration: 0.1
+                            duration: 0.5
                         });
                     }
-                }
-
-                if (Math.abs(index - currentIndex) > 1) {
-                    gsap.to(slide, {
-                        opacity: 1,
-                        duration: 0.1,
-                        zIndex: 0
-                    });
                 }
             });
 
@@ -148,7 +173,7 @@ export const initSliderCards = () => {
                                 left: '15%',
                                 top: '15%',
                                 zIndex: 3,
-                                duration: 0.3
+                                duration: 0.8
                             });
                         } else if (index === currentIndex + 1) {
                             slide.classList.add('next');
@@ -159,7 +184,7 @@ export const initSliderCards = () => {
                                 left: '13%',
                                 top: '-3%',
                                 zIndex: 2,
-                                duration: 0.3
+                                duration: 0.8
                             });
                         } else if (index === currentIndex - 1) {
                             slide.classList.add('prev');
@@ -170,20 +195,20 @@ export const initSliderCards = () => {
                                 left: '10%',
                                 top: '17%',
                                 zIndex: 1,
-                                duration: 0.3
+                                duration: 0.8
                             });
                         } else {
                             gsap.to(slide, {
                                 opacity: 1,
                                 zIndex: 0,
-                                duration: 0.3
+                                duration: 0.8
                             });
                         }
                     });
 
                     setTimeout(() => {
                         isAnimating = false;
-                    }, 300);
+                    }, 1200);
                 }
             }
         };
@@ -224,9 +249,15 @@ export const initSliderCards = () => {
             const direction = e.deltaY > 0 ? 1 : -1;
             
             if (shouldUnblockScroll(direction)) {
-                setTimeout(() => {
-                    unblockScroll();
-                }, 1000);
+                e.preventDefault();
+                accumulatedDelta += e.deltaY * 0.8;
+                updateSlides(e.deltaY);
+                
+                if (!isAnimating) {
+                    setTimeout(() => {
+                        unblockScroll();
+                    }, 1000);
+                }
             } else {
                 if (isSliderInView) {
                     e.preventDefault();
@@ -254,9 +285,15 @@ export const initSliderCards = () => {
             const direction = deltaY > 0 ? 1 : -1;
 
             if (shouldUnblockScroll(direction)) {
-                setTimeout(() => {
-                    unblockScroll();
-                }, 1000);
+                e.preventDefault();
+                accumulatedDelta += deltaY * 0.8;
+                updateSlides(deltaY);
+                
+                if (!isAnimating) {
+                    setTimeout(() => {
+                        unblockScroll();
+                    }, 1000);
+                }
             } else {
                 if (isSliderInView) {
                     e.preventDefault();
