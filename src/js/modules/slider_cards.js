@@ -51,111 +51,234 @@ export const initSliderCards = () => {
 
     const initializeSlider = () => {
         const slides = gsap.utils.toArray('.slide');
-        if (slides.length < 3) return;
+        if (!slides || slides.length < 2) return;
 
         let isAnimating = false;
         let currentIndex = 0;
         let isSliderInView = false;
         const sliderSection = document.querySelector('.slider-section');
+        if (!sliderSection) return;
+
         let accumulatedDelta = 0;
         let isScrollBlocked = false;
 
+        slides.forEach((slide, index) => {
+            slide.className = 'slide';
+            if (index === currentIndex) {
+                slide.classList.add('active');
+                gsap.set(slide, {
+                    opacity: 1,
+                    rotateZ: 0,
+                    y: '0%',
+                    x: '0%',
+                    left: '15%',
+                    top: '15%',
+                    scale: 1,
+                    filter: 'brightness(1.2)',
+                    zIndex: 3,
+                    backgroundColor: 'rgba(0, 0, 0, 1)'
+                });
+            } else if (index === currentIndex + 1) {
+                slide.classList.add('next');
+                gsap.set(slide, {
+                    opacity: 0.8,
+                    rotateZ: 12,
+                    y: '15%',
+                    x: '-3%',
+                    left: '13%',
+                    top: '-5%',
+                    scale: 0.98,
+                    filter: 'brightness(1.1)',
+                    zIndex: 2
+                });
+            } else if (index === currentIndex - 1) {
+                slide.classList.add('prev');
+                gsap.set(slide, {
+                    opacity: 0.8,
+                    rotateZ: 17,
+                    y: '-15%',
+                    x: '3%',
+                    left: '12%',
+                    top: '20%',
+                    scale: 0.98,
+                    filter: 'brightness(1.1)',
+                    zIndex: 1
+                });
+            } else {
+                gsap.set(slide, {
+                    opacity: 0.7,
+                    scale: 0.95,
+                    filter: 'brightness(1)',
+                    zIndex: 0
+                });
+            }
+        });
+
+        const updateMousePosition = (e, slide) => {
+            const rect = slide.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            slide.style.setProperty('--mouse-x', `${x}%`);
+            slide.style.setProperty('--mouse-y', `${y}%`);
+        };
+
+        slides.forEach(slide => {
+            slide.addEventListener('mousemove', (e) => {
+                updateMousePosition(e, slide);
+            });
+
+            slide.addEventListener('mouseleave', () => {
+                slide.style.setProperty('--mouse-x', '50%');
+                slide.style.setProperty('--mouse-y', '50%');
+            });
+        });
+
+        const animateText = (slide) => {
+            const slideInner = slide.querySelector('.slide-inner');
+            const text = slideInner.textContent.trim();
+            slideInner.textContent = '';
+            
+            // Спеціальна обробка для першого слайду
+            if (text.includes('A 30-YEAR')) {
+                const lines = [
+                    ['A', '30-YEAR'],
+                    ['HISTORY', 'OF'],
+                    ['SUCCESS']
+                ];
+                let totalChars = 0;
+                
+                lines.forEach((line, lineIndex) => {
+                    const lineContainer = document.createElement('div');
+                    lineContainer.className = 'line';
+                    
+                    line.forEach((word, wordIndex) => {
+                        const wordContainer = document.createElement('span');
+                        wordContainer.className = 'word';
+                        
+                        [...word].forEach((char) => {
+                            const span = document.createElement('span');
+                            span.textContent = char;
+                            span.style.setProperty('--char-index', totalChars);
+                            wordContainer.appendChild(span);
+                            totalChars++;
+                        });
+                        
+                        lineContainer.appendChild(wordContainer);
+                        
+                        if (wordIndex < line.length - 1) {
+                            const space = document.createElement('span');
+                            space.textContent = ' ';
+                            space.className = 'space';
+                            lineContainer.appendChild(space);
+                        }
+                    });
+                    
+                    slideInner.appendChild(lineContainer);
+                    
+                });
+            } else {
+                // Для інших слайдів
+                const words = text.split(' ');
+                let totalChars = 0;
+                
+                const lineContainer = document.createElement('div');
+                lineContainer.className = 'line';
+                
+                words.forEach((word, wordIndex) => {
+                    const wordContainer = document.createElement('span');
+                    wordContainer.className = 'word';
+                    
+                    [...word].forEach((char) => {
+                        const span = document.createElement('span');
+                        span.textContent = char;
+                        span.style.setProperty('--char-index', totalChars);
+                        wordContainer.appendChild(span);
+                        totalChars++;
+                    });
+                    
+                    lineContainer.appendChild(wordContainer);
+                    
+                    if (wordIndex < words.length - 1) {
+                        const space = document.createElement('span');
+                        space.textContent = ' ';
+                        space.className = 'space';
+                        lineContainer.appendChild(space);
+                    }
+                });
+                
+                slideInner.appendChild(lineContainer);
+            }
+
+            // Запускаємо анімацію з невеликою затримкою
+            setTimeout(() => {
+                const spans = slideInner.querySelectorAll('span:not(.space):not(.word)');
+                spans.forEach(span => span.classList.add('animate'));
+            }, 100);
+        };
+
         const updateSlides = (delta) => {
-            if (isAnimating) return;
+            if (isAnimating || slides.length < 2) return;
             
             const direction = delta > 0 ? 1 : -1;
-            const progress = Math.min(Math.abs(accumulatedDelta) / 1000, 1);
+            const nextIndex = currentIndex + direction;
+            
+            if (nextIndex < 0 || nextIndex >= slides.length) return;
+
+            const progress = Math.min(Math.abs(accumulatedDelta) / 1500, 1);
 
             slides.forEach((slide, index) => {
                 if (index === currentIndex) {
-                    gsap.set(slide, {
+                    const slideInner = slide.querySelector('.slide-inner');
+                    slideInner.style.animation = 'none';
+                    slideInner.offsetHeight;
+                    slideInner.style.animation = null;
+                    
+                    gsap.to(slide, {
                         opacity: 1,
-                        rotate: 0,
-                        y: '0%',
-                        left: '15%',
-                        top: '15%',
+                        rotateZ: direction * progress * 12,
+                        y: direction * progress * -40 + '%',
+                        scale: 1,
+                        filter: 'brightness(1.2)',
+                        duration: 0.3,
+                        ease: 'power2.out',
                         zIndex: 3
                     });
-                } else if (index === currentIndex + 1) {
-                    gsap.set(slide, {
-                        opacity: 1,
-                        rotate: 15,
-                        y: '20%',
+                } 
+                
+                if (direction > 0 && index === currentIndex + 1) {
+                    gsap.to(slide, {
+                        opacity: 0.95,
+                        rotateZ: 12,
+                        y: '15%',
+                        x: '-3%',
+                        scale: 0.98,
+                        filter: 'brightness(1.1)',
                         left: '13%',
-                        top: '-3%',
+                        top: '-5%',
+                        duration: 0.3,
+                        ease: 'power2.out',
                         zIndex: 2
                     });
-                } else if (index === currentIndex - 1) {
-                    gsap.set(slide, {
-                        opacity: 1,
-                        rotate: 25,
-                        y: '-20%',
-                        left: '10%',
-                        top: '17%',
+                }
+                
+                if (direction < 0 && index === currentIndex - 1) {
+                    gsap.to(slide, {
+                        opacity: 0.95,
+                        rotateZ: 17,
+                        y: '-15%',
+                        x: '3%',
+                        scale: 0.98,
+                        filter: 'brightness(1.1)',
+                        left: '12%',
+                        top: '20%',
+                        duration: 0.3,
+                        ease: 'power2.out',
                         zIndex: 1
                     });
                 }
             });
 
-            slides.forEach((slide, index) => {
-                if (index === currentIndex) {
-                    gsap.to(slide, {
-                        opacity: 1,
-                        rotate: direction * progress * 90,
-                        y: direction * progress * -100 + '%',
-                        duration: 0.5,
-                        zIndex: 3
-                    });
-                } 
-                
-                if (direction > 0) {
-                    if (index === currentIndex + 1) {
-                        gsap.to(slide, {
-                            opacity: 1,
-                            rotate: 15,
-                            y: '20%',
-                            left: '13%',
-                            top: '-3%',
-                            zIndex: 2,
-                            duration: 0.5
-                        });
-                    } else if (index === currentIndex - 1) {
-                        gsap.to(slide, {
-                            opacity: 1,
-                            rotate: 25,
-                            y: '-20%',
-                            left: '10%',
-                            top: '17%',
-                            zIndex: 1,
-                            duration: 0.5
-                        });
-                    }
-                } else {
-                    if (index === currentIndex - 1) {
-                        gsap.to(slide, {
-                            opacity: 1,
-                            rotate: 25,
-                            y: '-20%',
-                            left: '10%',
-                            top: '17%',
-                            zIndex: 2,
-                            duration: 0.5
-                        });
-                    } else if (index === currentIndex + 1) {
-                        gsap.to(slide, {
-                            opacity: 1,
-                            rotate: 15,
-                            y: '20%',
-                            left: '13%',
-                            top: '-3%',
-                            zIndex: 1,
-                            duration: 0.5
-                        });
-                    }
-                }
-            });
-
-            if (Math.abs(accumulatedDelta) > 400 && !isAnimating) {
+            if (Math.abs(accumulatedDelta) > 600 && !isAnimating) {
                 const nextIndex = currentIndex + (direction > 0 ? 1 : -1);
                 if (nextIndex >= 0 && nextIndex < slides.length) {
                     isAnimating = true;
@@ -168,54 +291,91 @@ export const initSliderCards = () => {
                             slide.classList.add('active');
                             gsap.to(slide, {
                                 opacity: 1,
-                                rotate: 0,
+                                rotateZ: 0,
                                 y: '0%',
+                                x: '0%',
                                 left: '15%',
                                 top: '15%',
+                                scale: 1,
+                                filter: 'brightness(1.2)',
+                                duration: 0.5,
+                                ease: 'power2.inOut',
                                 zIndex: 3,
-                                duration: 0.8
+                                onComplete: () => {
+                                    animateText(slide);
+                                }
                             });
                         } else if (index === currentIndex + 1) {
                             slide.classList.add('next');
                             gsap.to(slide, {
-                                opacity: 1,
-                                rotate: 15,
-                                y: '20%',
+                                opacity: 0.95,
+                                rotateZ: 12,
+                                y: '15%',
+                                x: '-3%',
                                 left: '13%',
-                                top: '-3%',
-                                zIndex: 2,
-                                duration: 0.8
+                                top: '-5%',
+                                scale: 0.98,
+                                filter: 'brightness(1.1)',
+                                duration: 0.5,
+                                ease: 'power2.inOut',
+                                zIndex: 2
                             });
                         } else if (index === currentIndex - 1) {
                             slide.classList.add('prev');
                             gsap.to(slide, {
-                                opacity: 1,
-                                rotate: 25,
-                                y: '-20%',
-                                left: '10%',
-                                top: '17%',
-                                zIndex: 1,
-                                duration: 0.8
+                                opacity: 0.95,
+                                rotateZ: 17,
+                                y: '-15%',
+                                x: '3%',
+                                left: '12%',
+                                top: '20%',
+                                scale: 0.98,
+                                filter: 'brightness(1.1)',
+                                duration: 0.5,
+                                ease: 'power2.inOut',
+                                zIndex: 1
                             });
                         } else {
                             gsap.to(slide, {
-                                opacity: 1,
-                                zIndex: 0,
-                                duration: 0.8
+                                opacity: 0.9,
+                                scale: 0.95,
+                                filter: 'brightness(1)',
+                                duration: 0.5,
+                                ease: 'power2.inOut',
+                                zIndex: 0
                             });
                         }
                     });
 
                     setTimeout(() => {
                         isAnimating = false;
-                    }, 1200);
+                    }, 600);
                 }
             }
         };
 
-        const shouldUnblockScroll = (direction) => {
-            return (direction > 0 && currentIndex >= slides.length - 1) || 
-                   (direction < 0 && currentIndex === 0);
+        const shouldUnblockScroll = () => {
+            const direction = Math.sign(accumulatedDelta);
+            const isLastSlide = currentIndex === slides.length - 1;
+            const isFirstSlide = currentIndex === 0;
+
+            // Для скролу вниз
+            if (direction > 0 && isLastSlide) {
+                setTimeout(() => {
+                    unblockScroll();
+                }, 300);
+                return true;
+            }
+            
+            // Для скролу вгору
+            if (direction < 0 && isFirstSlide) {
+                setTimeout(() => {
+                    unblockScroll();
+                }, 300);
+                return true;
+            }
+            
+            return false;
         };
 
         const centerSlider = () => {
@@ -231,41 +391,36 @@ export const initSliderCards = () => {
         };
 
         const blockScroll = () => {
-            isScrollBlocked = true;
-            centerSlider();
-            setTimeout(() => {
+            if (!isScrollBlocked) {
+                isScrollBlocked = true;
+                centerSlider();
                 scroll.stop();
-            }, 800);
+            }
         };
 
         const unblockScroll = () => {
-            isScrollBlocked = false;
-            scroll.start();
+            if (isScrollBlocked) {
+                isScrollBlocked = false;
+                scroll.start();
+                isSliderInView = false;
+            }
         };
 
-        window.addEventListener('wheel', (e) => {
-            if (!isSliderInView) return;
+        const handleWheel = (e) => {
+            if (!isSliderInView || !isScrollBlocked || isAnimating) return;
+            e.preventDefault();
 
-            const direction = e.deltaY > 0 ? 1 : -1;
-            
-            if (shouldUnblockScroll(direction)) {
-                e.preventDefault();
-                accumulatedDelta += e.deltaY * 0.8;
-                updateSlides(e.deltaY);
-                
-                if (!isAnimating) {
-                    setTimeout(() => {
-                        unblockScroll();
-                    }, 1000);
-                }
-            } else {
-                if (isSliderInView) {
-                    e.preventDefault();
-                    accumulatedDelta += e.deltaY * 0.8;
-                    updateSlides(e.deltaY);
-                }
+            accumulatedDelta += e.deltaY;
+
+            if (shouldUnblockScroll()) {
+                accumulatedDelta = 0;
+                return;
             }
-        }, { passive: false });
+
+            updateSlides(accumulatedDelta);
+        };
+
+        window.addEventListener('wheel', handleWheel, { passive: false });
 
         let touchStartY = 0;
         let isTouching = false;
@@ -278,29 +433,20 @@ export const initSliderCards = () => {
         });
 
         window.addEventListener('touchmove', (e) => {
-            if (!isSliderInView || !isTouching) return;
+            if (!isSliderInView || !isTouching || !isScrollBlocked || isAnimating) return;
             
             const touchEndY = e.touches[0].clientY;
             const deltaY = touchStartY - touchEndY;
-            const direction = deltaY > 0 ? 1 : -1;
+            e.preventDefault();
 
-            if (shouldUnblockScroll(direction)) {
-                e.preventDefault();
-                accumulatedDelta += deltaY * 0.8;
-                updateSlides(deltaY);
-                
-                if (!isAnimating) {
-                    setTimeout(() => {
-                        unblockScroll();
-                    }, 1000);
-                }
-            } else {
-                if (isSliderInView) {
-                    e.preventDefault();
-                    accumulatedDelta += deltaY * 0.8;
-                    updateSlides(deltaY);
-                }
+            accumulatedDelta += deltaY;
+            
+            if (shouldUnblockScroll()) {
+                accumulatedDelta = 0;
+                return;
             }
+            
+            updateSlides(deltaY);
         }, { passive: false });
 
         window.addEventListener('touchend', () => {
@@ -310,23 +456,13 @@ export const initSliderCards = () => {
                         if (index === currentIndex) {
                             gsap.to(slide, {
                                 opacity: 1,
-                                rotate: 0,
+                                rotateZ: 0,
                                 y: '0%',
-                                duration: 0.3
-                            });
-                        } else if (index === currentIndex + 1) {
-                            gsap.to(slide, {
-                                opacity: 1,
-                                rotate: 9,
-                                y: '20%',
-                                duration: 0.3
-                            });
-                        } else if (index === currentIndex - 1) {
-                            gsap.to(slide, {
-                                opacity: 1,
-                                rotate: 15,
-                                y: '-20%',
-                                duration: 0.3
+                                x: '0%',
+                                scale: 1,
+                                filter: 'brightness(1)',
+                                duration: 0.3,
+                                ease: 'power2.out'
                             });
                         }
                     });
@@ -339,51 +475,42 @@ export const initSliderCards = () => {
         ScrollTrigger.create({
             trigger: sliderSection,
             scroller: '[data-scroll-container]',
-            start: 'top 60%',
-            end: 'bottom 40%',
+            start: 'top 45%',
+            end: 'bottom 55%',
             onEnter: () => {
                 isSliderInView = true;
                 blockScroll();
+                slides.forEach((slide, index) => {
+                    if (index === currentIndex) {
+                        animateText(slide);
+                    }
+                });
             },
             onEnterBack: () => {
                 isSliderInView = true;
                 blockScroll();
             },
             onLeave: () => {
-                isSliderInView = false;
-                setTimeout(() => {
-                    unblockScroll();
-                }, 1000);
+                unblockScroll();
             },
             onLeaveBack: () => {
-                isSliderInView = false;
-                setTimeout(() => {
-                    unblockScroll();
-                }, 1000);
+                unblockScroll();
             }
         });
 
         slides.forEach((slide, index) => {
-            slide.className = 'slide';
             if (index === currentIndex) {
-                slide.classList.add('active');
-            } else if (index === currentIndex + 1) {
-                slide.classList.add('next');
-            } else if (index === currentIndex - 1 || (currentIndex === 0 && index === slides.length - 1)) {
-                slide.classList.add('prev');
+                const slideInner = slide.querySelector('.slide-inner');
+                const text = slideInner.textContent;
+                slideInner.textContent = '';
+                
+                [...text].forEach((char) => {
+                    const span = document.createElement('span');
+                    span.textContent = char;
+                    slideInner.appendChild(span);
+                });
             }
         });
-
-        if (slides[slides.length - 1]) {
-            gsap.set(slides[slides.length - 1], {
-                opacity: 1,
-                rotate: 15,
-                y: '-20%',
-                left: '10%',
-                top: '17%',
-                zIndex: 1
-            });
-        }
     };
 
     initializeSlider();
@@ -395,4 +522,4 @@ export const initSliderCards = () => {
     });
 
     return scroll;
-}; 
+};
