@@ -427,30 +427,33 @@ export const initSliderCards = () => {
 
         window.addEventListener('touchstart', (e) => {
             if (!isSliderInView) return;
+            e.preventDefault();
             touchStartY = e.touches[0].clientY;
             isTouching = true;
             accumulatedDelta = 0;
-        });
+        }, { passive: false });
 
         window.addEventListener('touchmove', (e) => {
             if (!isSliderInView || !isTouching || !isScrollBlocked || isAnimating) return;
+            e.preventDefault();
             
             const touchEndY = e.touches[0].clientY;
             const deltaY = touchStartY - touchEndY;
-            e.preventDefault();
+            touchStartY = touchEndY;
 
-            accumulatedDelta += deltaY;
+            accumulatedDelta += deltaY * 2; // Збільшуємо чутливість для мобільних
             
             if (shouldUnblockScroll()) {
                 accumulatedDelta = 0;
                 return;
             }
             
-            updateSlides(deltaY);
+            updateSlides(accumulatedDelta);
         }, { passive: false });
 
-        window.addEventListener('touchend', () => {
+        window.addEventListener('touchend', (e) => {
             if (isTouching && isSliderInView) {
+                e.preventDefault();
                 if (Math.abs(accumulatedDelta) < 400) {
                     slides.forEach((slide, index) => {
                         if (index === currentIndex) {
@@ -460,7 +463,7 @@ export const initSliderCards = () => {
                                 y: '0%',
                                 x: '0%',
                                 scale: 1,
-                                filter: 'brightness(1)',
+                                filter: 'brightness(1.2)',
                                 duration: 0.3,
                                 ease: 'power2.out'
                             });
@@ -470,7 +473,7 @@ export const initSliderCards = () => {
                 accumulatedDelta = 0;
             }
             isTouching = false;
-        });
+        }, { passive: false });
 
         ScrollTrigger.create({
             trigger: sliderSection,
